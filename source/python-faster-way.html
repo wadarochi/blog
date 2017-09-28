@@ -1,0 +1,3050 @@
+title: "Python: faster way"
+layout: false
+---
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <meta name="keywords" content="python programming language,python faster way,python,programming,language,python2,python27">
+        <meta name="description" content="python programming language faster way">
+        <meta name="author" content="Zokis">
+        <link rel="icon" href="img/python.org.16.ico" sizes="16x16">
+        <link rel="icon" href="img/python.org.ico">
+        <link rel="stylesheet" type="text/css" href="css/compress.css" media="screen" />
+        <link rel="stylesheet" type="text/css" href="css/gments/monokai.css" media="screen" />
+        <title>Python: faster way</title>
+    </head>    
+<body>
+<header>
+    <div class="container-super">
+         <h1>Python: faster way</h1>
+         <h2>
+          Tricks for your code run faster --
+          <a href="https://github.com/zokis/Python--Faster-Way">
+            <img src="img/blacktocat.png">
+          </a>
+         </h2>
+    </div>
+</header>
+<div class="container-fluid">
+    <a href="#platform"><h4>#Platform</h4></a>
+    <div class="row-fluid" id="platform">
+        <div class="span12"><pre class="python">
+>>> import sys
+>>> import platform
+>>> platform.system()
+'Linux'
+>>> platform.release()
+'3.15.7-1-aufs_friendly'
+>>> sys.version
+'2.7.9 (default, Dec 11 2014, 04:42:00) 
+[GCC 4.9.2]'
+>>> from timeit import timeit
+>>> from dis import dis
+>>> 
+        </pre></div>
+    </div>
+    
+    <a href="#test1"><h4>#Test 1</h4></a>
+    <div class="row-fluid" id="test1">
+        
+        <div class="span6"><pre class="python">
+def a():
+    d = {}
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.12117099762
+>>> 
+>>> dis(a)
+  5           0 BUILD_MAP                0
+              3 STORE_FAST               0 (d)
+
+  6           6 LOAD_FAST                0 (d)
+              9 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    d = dict()
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.223812103271
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (dict)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 STORE_FAST               0 (d)
+
+  6           9 LOAD_FAST                0 (d)
+             12 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test2"><h4>#Test 2</h4></a>
+    <div class="row-fluid" id="test2">
+        
+        <div class="span6"><pre class="python">
+def a():
+    l = [0, 8, 6, 4, 2, 1, 3, 5, 7, 9]
+    l.sort()
+    return l
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.920419931412
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 LOAD_CONST               2 (8)
+              6 LOAD_CONST               3 (6)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (2)
+             15 LOAD_CONST               6 (1)
+             18 LOAD_CONST               7 (3)
+             21 LOAD_CONST               8 (5)
+             24 LOAD_CONST               9 (7)
+             27 LOAD_CONST              10 (9)
+             30 BUILD_LIST              10
+             33 STORE_FAST               0 (l)
+
+  6          36 LOAD_FAST                0 (l)
+             39 LOAD_ATTR                0 (sort)
+             42 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+             45 POP_TOP
+
+  7          46 LOAD_FAST                0 (l)
+             49 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    l = [0, 8, 6, 4, 2, 1, 3, 5, 7, 9]
+    return sorted(l)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.22686982155
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 LOAD_CONST               2 (8)
+              6 LOAD_CONST               3 (6)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (2)
+             15 LOAD_CONST               6 (1)
+             18 LOAD_CONST               7 (3)
+             21 LOAD_CONST               8 (5)
+             24 LOAD_CONST               9 (7)
+             27 LOAD_CONST              10 (9)
+             30 BUILD_LIST              10
+             33 STORE_FAST               0 (l)
+
+  6          36 LOAD_GLOBAL              0 (sorted)
+             39 LOAD_FAST                0 (l)
+             42 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             45 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test3"><h4>#Test 3</h4></a>
+    <div class="row-fluid" id="test3">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a, b, c, d, e, f, g, h, i, j = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    return j, i, h, g, f, e, d, c, b, a
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.287055969238
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST              11 ((0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
+              3 UNPACK_SEQUENCE         10
+              6 STORE_FAST               0 (a)
+              9 STORE_FAST               1 (b)
+             12 STORE_FAST               2 (c)
+             15 STORE_FAST               3 (d)
+             18 STORE_FAST               4 (e)
+             21 STORE_FAST               5 (f)
+             24 STORE_FAST               6 (g)
+             27 STORE_FAST               7 (h)
+             30 STORE_FAST               8 (i)
+             33 STORE_FAST               9 (j)
+
+  6          36 LOAD_FAST                9 (j)
+             39 LOAD_FAST                8 (i)
+             42 LOAD_FAST                7 (h)
+             45 LOAD_FAST                6 (g)
+             48 LOAD_FAST                5 (f)
+             51 LOAD_FAST                4 (e)
+             54 LOAD_FAST                3 (d)
+             57 LOAD_FAST                2 (c)
+             60 LOAD_FAST                1 (b)
+             63 LOAD_FAST                0 (a)
+             66 BUILD_TUPLE             10
+             69 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = 0
+    b = 1
+    c = 2
+    d = 3
+    e = 4
+    f = 5
+    g = 6
+    h = 7
+    i = 8
+    j = 9
+    return j, i, h, g, f, e, d, c, b, a
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.328858137131
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (1)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               3 (2)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_CONST               4 (3)
+             21 STORE_FAST               3 (d)
+
+  9          24 LOAD_CONST               5 (4)
+             27 STORE_FAST               4 (e)
+
+ 10          30 LOAD_CONST               6 (5)
+             33 STORE_FAST               5 (f)
+
+ 11          36 LOAD_CONST               7 (6)
+             39 STORE_FAST               6 (g)
+
+ 12          42 LOAD_CONST               8 (7)
+             45 STORE_FAST               7 (h)
+
+ 13          48 LOAD_CONST               9 (8)
+             51 STORE_FAST               8 (i)
+
+ 14          54 LOAD_CONST              10 (9)
+             57 STORE_FAST               9 (j)
+
+ 15          60 LOAD_FAST                9 (j)
+             63 LOAD_FAST                8 (i)
+             66 LOAD_FAST                7 (h)
+             69 LOAD_FAST                6 (g)
+             72 LOAD_FAST                5 (f)
+             75 LOAD_FAST                4 (e)
+             78 LOAD_FAST                3 (d)
+             81 LOAD_FAST                2 (c)
+             84 LOAD_FAST                1 (b)
+             87 LOAD_FAST                0 (a)
+             90 BUILD_TUPLE             10
+             93 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test4"><h4>#Test 4</h4></a>
+    <div class="row-fluid" id="test4">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a, b, c, d, e, f = 2, 5, 52, 25, 225, 552
+    if a < b and b < c and c < d and d < e and e < f:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.283309221268
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               9 ((2, 5, 52, 25, 225, 552))
+              3 UNPACK_SEQUENCE          6
+              6 STORE_FAST               0 (a)
+              9 STORE_FAST               1 (b)
+             12 STORE_FAST               2 (c)
+             15 STORE_FAST               3 (d)
+             18 STORE_FAST               4 (e)
+             21 STORE_FAST               5 (f)
+
+  6          24 LOAD_FAST                0 (a)
+             27 LOAD_FAST                1 (b)
+             30 COMPARE_OP               0 (&lt;)
+             33 POP_JUMP_IF_FALSE       88
+             36 LOAD_FAST                1 (b)
+             39 LOAD_FAST                2 (c)
+             42 COMPARE_OP               0 (&lt;)
+             45 POP_JUMP_IF_FALSE       88
+             48 LOAD_FAST                2 (c)
+             51 LOAD_FAST                3 (d)
+             54 COMPARE_OP               0 (&lt;)
+             57 POP_JUMP_IF_FALSE       88
+             60 LOAD_FAST                3 (d)
+             63 LOAD_FAST                4 (e)
+             66 COMPARE_OP               0 (&lt;)
+             69 POP_JUMP_IF_FALSE       88
+             72 LOAD_FAST                4 (e)
+             75 LOAD_FAST                5 (f)
+             78 COMPARE_OP               0 (&lt;)
+             81 POP_JUMP_IF_FALSE       88
+
+  7          84 LOAD_CONST               7 (True)
+             87 RETURN_VALUE
+
+  8     &gt;&gt;   88 LOAD_CONST               8 (False)
+             91 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a, b, c, d, e, f = 2, 5, 52, 25, 225, 552
+    if a < b < c < d < e < f:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.313526153564
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               9 ((2, 5, 52, 25, 225, 552))
+              3 UNPACK_SEQUENCE          6
+              6 STORE_FAST               0 (a)
+              9 STORE_FAST               1 (b)
+             12 STORE_FAST               2 (c)
+             15 STORE_FAST               3 (d)
+             18 STORE_FAST               4 (e)
+             21 STORE_FAST               5 (f)
+
+  6          24 LOAD_FAST                0 (a)
+             27 LOAD_FAST                1 (b)
+             30 DUP_TOP
+             31 ROT_THREE
+             32 COMPARE_OP               0 (&lt;)
+             35 JUMP_IF_FALSE_OR_POP    80
+             38 LOAD_FAST                2 (c)
+             41 DUP_TOP
+             42 ROT_THREE
+             43 COMPARE_OP               0 (&lt;)
+             46 JUMP_IF_FALSE_OR_POP    80
+             49 LOAD_FAST                3 (d)
+             52 DUP_TOP
+             53 ROT_THREE
+             54 COMPARE_OP               0 (&lt;)
+             57 JUMP_IF_FALSE_OR_POP    80
+             60 LOAD_FAST                4 (e)
+             63 DUP_TOP
+             64 ROT_THREE
+             65 COMPARE_OP               0 (&lt;)
+             68 JUMP_IF_FALSE_OR_POP    80
+             71 LOAD_FAST                5 (f)
+             74 COMPARE_OP               0 (&lt;)
+             77 JUMP_FORWARD             2 (to 82)
+        &gt;&gt;   80 ROT_TWO
+             81 POP_TOP
+        &gt;&gt;   82 POP_JUMP_IF_FALSE       89
+
+  7          85 LOAD_CONST               7 (True)
+             88 RETURN_VALUE
+
+  8     &gt;&gt;   89 LOAD_CONST               8 (False)
+             92 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test5"><h4>#Test 5</h4></a>
+    <div class="row-fluid" id="test5">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = True
+    if a:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.144029140472
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (True)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 POP_JUMP_IF_FALSE       16
+
+  7          12 LOAD_CONST               1 (True)
+             15 RETURN_VALUE
+
+  8     &gt;&gt;   16 LOAD_CONST               2 (False)
+             19 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = True
+    if a is True:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.184409141541
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (True)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               1 (True)
+             12 COMPARE_OP               8 (is)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               1 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               2 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = True
+    if a == True:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.202383041382
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (True)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               1 (True)
+             12 COMPARE_OP               2 (==)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               1 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               2 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test6"><h4>#Test 6</h4></a>
+    <div class="row-fluid" id="test6">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    if a != 2:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.165642023087
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               3 (!=)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               3 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               4 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    if a is not 2:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.166152000427
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               9 (is not)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               3 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               4 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    if not a is 2:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.170970916748
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               9 (is not)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               3 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               4 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test7"><h4>#Test 7</h4></a>
+    <div class="row-fluid" id="test7">
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = []
+    if not a:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.159525871277
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 POP_JUMP_IF_TRUE        16
+
+  7          12 LOAD_CONST               1 (True)
+             15 RETURN_VALUE
+
+  8     &gt;&gt;   16 LOAD_CONST               2 (False)
+             19 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = []
+    if a:
+        return False
+    return True
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.160557985306
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 POP_JUMP_IF_FALSE       16
+
+  7          12 LOAD_CONST               1 (False)
+             15 RETURN_VALUE
+
+  8     &gt;&gt;   16 LOAD_CONST               2 (True)
+             19 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = []
+    if len(a) <= 0:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.183171987534
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_GLOBAL              0 (len)
+              9 LOAD_FAST                0 (a)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 LOAD_CONST               1 (0)
+             18 COMPARE_OP               1 (&lt;=)
+             21 POP_JUMP_IF_FALSE       28
+
+  7          24 LOAD_CONST               2 (True)
+             27 RETURN_VALUE
+
+  8     &gt;&gt;   28 LOAD_CONST               3 (False)
+             31 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = []
+    if a == []:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.224298000336
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 BUILD_LIST               0
+             12 COMPARE_OP               2 (==)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               1 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               2 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test8"><h4>#Test 8</h4></a>
+    <div class="row-fluid" id="test8">
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = object()
+    if a:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.206521987915
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (object)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 STORE_FAST               0 (a)
+
+  6           9 LOAD_FAST                0 (a)
+             12 POP_JUMP_IF_FALSE       19
+
+  7          15 LOAD_CONST               1 (True)
+             18 RETURN_VALUE
+
+  8     &gt;&gt;   19 LOAD_CONST               2 (False)
+             22 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = object()
+    if a is None:
+        return False
+    return True
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.214263916016
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (object)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 STORE_FAST               0 (a)
+
+  6           9 LOAD_FAST                0 (a)
+             12 LOAD_CONST               0 (None)
+             15 COMPARE_OP               8 (is)
+             18 POP_JUMP_IF_FALSE       25
+
+  7          21 LOAD_CONST               1 (False)
+             24 RETURN_VALUE
+
+  8     &gt;&gt;   25 LOAD_CONST               2 (True)
+             28 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = object()
+    if a is not None:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.214513063431
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (object)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 STORE_FAST               0 (a)
+
+  6           9 LOAD_FAST                0 (a)
+             12 LOAD_CONST               0 (None)
+             15 COMPARE_OP               9 (is not)
+             18 POP_JUMP_IF_FALSE       25
+
+  7          21 LOAD_CONST               1 (True)
+             24 RETURN_VALUE
+
+  8     &gt;&gt;   25 LOAD_CONST               2 (False)
+             28 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    a = object()
+    if not a:
+        return False
+    return True
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.2481341362
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (object)
+              3 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+              6 STORE_FAST               0 (a)
+
+  6           9 LOAD_FAST                0 (a)
+             12 POP_JUMP_IF_TRUE        19
+
+  7          15 LOAD_CONST               1 (False)
+             18 RETURN_VALUE
+
+  8     &gt;&gt;   19 LOAD_CONST               2 (True)
+             22 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test9"><h4>#Test 9</h4></a>
+    <div class="row-fluid" id="test9">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = [1, 2, 3, 4, 5]
+    s = 0
+    for p, v in enumerate(a):
+        s += p
+        s += v
+    return s
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.04723882675
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (5)
+             15 BUILD_LIST               5
+             18 STORE_FAST               0 (a)
+
+  6          21 LOAD_CONST               6 (0)
+             24 STORE_FAST               1 (s)
+
+  7          27 SETUP_LOOP              46 (to 76)
+             30 LOAD_GLOBAL              0 (enumerate)
+             33 LOAD_FAST                0 (a)
+             36 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             39 GET_ITER
+        &gt;&gt;   40 FOR_ITER                32 (to 75)
+             43 UNPACK_SEQUENCE          2
+             46 STORE_FAST               2 (p)
+             49 STORE_FAST               3 (v)
+
+  8          52 LOAD_FAST                1 (s)
+             55 LOAD_FAST                2 (p)
+             58 INPLACE_ADD
+             59 STORE_FAST               1 (s)
+
+  9          62 LOAD_FAST                1 (s)
+             65 LOAD_FAST                3 (v)
+             68 INPLACE_ADD
+             69 STORE_FAST               1 (s)
+             72 JUMP_ABSOLUTE           40
+        &gt;&gt;   75 POP_BLOCK
+
+ 10     &gt;&gt;   76 LOAD_FAST                1 (s)
+             79 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = [1, 2, 3, 4, 5]
+    s = 0
+    for i in range(len(a)):
+        s += i
+        s += a[i]
+    return s
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.22957205772
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (5)
+             15 BUILD_LIST               5
+             18 STORE_FAST               0 (a)
+
+  6          21 LOAD_CONST               6 (0)
+             24 STORE_FAST               1 (s)
+
+  7          27 SETUP_LOOP              50 (to 80)
+             30 LOAD_GLOBAL              0 (range)
+             33 LOAD_GLOBAL              1 (len)
+             36 LOAD_FAST                0 (a)
+             39 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             42 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             45 GET_ITER
+        &gt;&gt;   46 FOR_ITER                30 (to 79)
+             49 STORE_FAST               2 (i)
+
+  8          52 LOAD_FAST                1 (s)
+             55 LOAD_FAST                2 (i)
+             58 INPLACE_ADD
+             59 STORE_FAST               1 (s)
+
+  9          62 LOAD_FAST                1 (s)
+             65 LOAD_FAST                0 (a)
+             68 LOAD_FAST                2 (i)
+             71 BINARY_SUBSCR
+             72 INPLACE_ADD
+             73 STORE_FAST               1 (s)
+             76 JUMP_ABSOLUTE           46
+        &gt;&gt;   79 POP_BLOCK
+
+ 10     &gt;&gt;   80 LOAD_FAST                1 (s)
+             83 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test10"><h4>#Test 10</h4></a>
+    <div class="row-fluid" id="test10">
+        
+        <div class="span6"><pre class="python">
+def a():
+    r = ''
+    for i in range(10):
+        r += str(i)
+    return r
+
+>>> 
+>>> timeit(a, number=1000000)
+... 2.59105205536
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&#39;&#39;)
+              3 STORE_FAST               0 (r)
+
+  6           6 SETUP_LOOP              36 (to 45)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               2 (10)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                22 (to 44)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                0 (r)
+             28 LOAD_GLOBAL              1 (str)
+             31 LOAD_FAST                1 (i)
+             34 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             37 INPLACE_ADD
+             38 STORE_FAST               0 (r)
+             41 JUMP_ABSOLUTE           19
+        &gt;&gt;   44 POP_BLOCK
+
+  8     &gt;&gt;   45 LOAD_FAST                0 (r)
+             48 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    r = []
+    for i in range(10):
+        r.append(str(i))
+    return ''.join(r)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 3.82146906853
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (r)
+
+  6           6 SETUP_LOOP              39 (to 48)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               1 (10)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                25 (to 47)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                0 (r)
+             28 LOAD_ATTR                1 (append)
+             31 LOAD_GLOBAL              2 (str)
+             34 LOAD_FAST                1 (i)
+             37 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             40 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             43 POP_TOP
+             44 JUMP_ABSOLUTE           19
+        &gt;&gt;   47 POP_BLOCK
+
+  8     &gt;&gt;   48 LOAD_CONST               2 (&#39;&#39;)
+             51 LOAD_ATTR                3 (join)
+             54 LOAD_FAST                0 (r)
+             57 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             60 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test11"><h4>#Test 11</h4></a>
+    <div class="row-fluid" id="test11">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 5
+    b = 2
+    c = 3
+    return "%s" % (a*(b+c))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.316877841949
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (5)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (2)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               3 (3)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_CONST               4 (&#39;%s&#39;)
+             21 LOAD_FAST                0 (a)
+             24 LOAD_FAST                1 (b)
+             27 LOAD_FAST                2 (c)
+             30 BINARY_ADD
+             31 BINARY_MULTIPLY
+             32 BINARY_MODULO
+             33 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 5
+    b = 2
+    c = 3
+    return str(a*(b+c))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.334637880325
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (5)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (2)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               3 (3)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_GLOBAL              0 (str)
+             21 LOAD_FAST                0 (a)
+             24 LOAD_FAST                1 (b)
+             27 LOAD_FAST                2 (c)
+             30 BINARY_ADD
+             31 BINARY_MULTIPLY
+             32 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             35 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 5
+    b = 2
+    c = 3
+    return "%d" % (a*(b+c))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.677181005478
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (5)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (2)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               3 (3)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_CONST               4 (&#39;%d&#39;)
+             21 LOAD_FAST                0 (a)
+             24 LOAD_FAST                1 (b)
+             27 LOAD_FAST                2 (c)
+             30 BINARY_ADD
+             31 BINARY_MULTIPLY
+             32 BINARY_MODULO
+             33 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test12"><h4>#Test 12</h4></a>
+    <div class="row-fluid" id="test12">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = [1, 2, 3, 4, 5]
+    return len(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.240168094635
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (5)
+             15 BUILD_LIST               5
+             18 STORE_FAST               0 (a)
+
+  6          21 LOAD_GLOBAL              0 (len)
+             24 LOAD_FAST                0 (a)
+             27 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             30 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = [1, 2, 3, 4, 5]
+    return a.__len__()
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.327343940735
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (5)
+             15 BUILD_LIST               5
+             18 STORE_FAST               0 (a)
+
+  6          21 LOAD_FAST                0 (a)
+             24 LOAD_ATTR                0 (__len__)
+             27 CALL_FUNCTION            0 (0 positional, 0 keyword pair)
+             30 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test13"><h4>#Test 13</h4></a>
+    <div class="row-fluid" id="test13">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = 1
+    b = 2
+    c = 2
+    d = 5
+    return (a+b+c)*d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.234872102737
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (2)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               2 (2)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_CONST               3 (5)
+             21 STORE_FAST               3 (d)
+
+  9          24 LOAD_FAST                0 (a)
+             27 LOAD_FAST                1 (b)
+             30 BINARY_ADD
+             31 LOAD_FAST                2 (c)
+             34 BINARY_ADD
+             35 LOAD_FAST                3 (d)
+             38 BINARY_MULTIPLY
+             39 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = 1
+    b = 2
+    c = 2
+    d = 5
+    return (a.__add__(b.__add__(c))).__mul__(d)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.576534986496
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_CONST               2 (2)
+              9 STORE_FAST               1 (b)
+
+  7          12 LOAD_CONST               2 (2)
+             15 STORE_FAST               2 (c)
+
+  8          18 LOAD_CONST               3 (5)
+             21 STORE_FAST               3 (d)
+
+  9          24 LOAD_FAST                0 (a)
+             27 LOAD_ATTR                0 (__add__)
+             30 LOAD_FAST                1 (b)
+             33 LOAD_ATTR                0 (__add__)
+             36 LOAD_FAST                2 (c)
+             39 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             42 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             45 LOAD_ATTR                1 (__mul__)
+             48 LOAD_FAST                3 (d)
+             51 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             54 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test14"><h4>#Test 14</h4></a>
+    <div class="row-fluid" id="test14">
+        
+        <div class="span6"><pre class="python">
+class Z():
+
+    def __init__(self, v):
+        self.v = v
+
+    def __mul__(self, o):
+        return Z(self.v * o.v)
+
+    def __add__(self, o):
+        return Z(self.v + o.v)
+
+
+def a():
+    a = Z(5)
+    b = Z(2)
+    c = Z(3)
+    return (b.__add__(c)).__mul__(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 2.96158599854
+>>> 
+>>> dis(a)
+ 17           0 LOAD_GLOBAL              0 (Z)
+              3 LOAD_CONST               1 (5)
+              6 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+              9 STORE_FAST               0 (a)
+
+ 18          12 LOAD_GLOBAL              0 (Z)
+             15 LOAD_CONST               2 (2)
+             18 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             21 STORE_FAST               1 (b)
+
+ 19          24 LOAD_GLOBAL              0 (Z)
+             27 LOAD_CONST               3 (3)
+             30 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             33 STORE_FAST               2 (c)
+
+ 20          36 LOAD_FAST                1 (b)
+             39 LOAD_ATTR                1 (__add__)
+             42 LOAD_FAST                2 (c)
+             45 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             48 LOAD_ATTR                2 (__mul__)
+             51 LOAD_FAST                0 (a)
+             54 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             57 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+class Z():
+
+    def __init__(self, v):
+        self.v = v
+
+    def __mul__(self, o):
+        return Z(self.v * o.v)
+
+    def __add__(self, o):
+        return Z(self.v + o.v)
+
+
+def a():
+    a = Z(5)
+    b = Z(2)
+    c = Z(3)
+    return (b + c) * a
+
+>>> 
+>>> timeit(a, number=1000000)
+... 4.80117797852
+>>> 
+>>> dis(a)
+ 17           0 LOAD_GLOBAL              0 (Z)
+              3 LOAD_CONST               1 (5)
+              6 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+              9 STORE_FAST               0 (a)
+
+ 18          12 LOAD_GLOBAL              0 (Z)
+             15 LOAD_CONST               2 (2)
+             18 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             21 STORE_FAST               1 (b)
+
+ 19          24 LOAD_GLOBAL              0 (Z)
+             27 LOAD_CONST               3 (3)
+             30 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             33 STORE_FAST               2 (c)
+
+ 20          36 LOAD_FAST                1 (b)
+             39 LOAD_FAST                2 (c)
+             42 BINARY_ADD
+             43 LOAD_FAST                0 (a)
+             46 BINARY_MULTIPLY
+             47 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test15"><h4>#Test 15</h4></a>
+    <div class="row-fluid" id="test15">
+        
+        <div class="span6"><pre class="python">
+def a():
+    s = 0
+    for i in range(50000):
+        s += i
+    return s
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 235.95063591
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (s)
+
+  6           6 SETUP_LOOP              30 (to 39)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               2 (50000)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                16 (to 38)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                0 (s)
+             28 LOAD_FAST                1 (i)
+             31 INPLACE_ADD
+             32 STORE_FAST               0 (s)
+             35 JUMP_ABSOLUTE           19
+        &gt;&gt;   38 POP_BLOCK
+
+  8     &gt;&gt;   39 LOAD_FAST                0 (s)
+             42 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    return sum(i for i in range(50000))
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 294.642810106
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (sum)
+              3 LOAD_CONST               1 (&lt;code object &lt;genexpr&gt; at 0x7f8b355bd420, file &#34;/tmp/__pfw_test15_t2.py&#34;, line 5&gt;)
+              6 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;genexpr&gt;&#39;)
+              9 MAKE_FUNCTION            0
+             12 LOAD_GLOBAL              1 (range)
+             15 LOAD_CONST               3 (50000)
+             18 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             21 GET_ITER
+             22 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             25 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             28 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test16"><h4>#Test 16</h4></a>
+    <div class="row-fluid" id="test16">
+        
+        <div class="span6"><pre class="python">
+def a():
+    return [i for i in range(1000)]
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 3.63279008865
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&lt;code object &lt;listcomp&gt; at 0x7fd5a2880420, file &#34;/tmp/__pfw_test16_t2.py&#34;, line 5&gt;)
+              3 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;listcomp&gt;&#39;)
+              6 MAKE_FUNCTION            0
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               3 (1000)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+             19 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             22 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    l = []
+    for i in range(1000):
+        l.append(i)
+    return l
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 12.3200118542
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (l)
+
+  6           6 SETUP_LOOP              33 (to 42)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               1 (1000)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                19 (to 41)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                0 (l)
+             28 LOAD_ATTR                1 (append)
+             31 LOAD_FAST                1 (i)
+             34 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             37 POP_TOP
+             38 JUMP_ABSOLUTE           19
+        &gt;&gt;   41 POP_BLOCK
+
+  8     &gt;&gt;   42 LOAD_FAST                0 (l)
+             45 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test17"><h4>#Test 17</h4></a>
+    <div class="row-fluid" id="test17">
+        
+        <div class="span4"><pre class="python">
+def a():
+    d = {}
+    for i in range(100):
+        d[str(i)] = i*2
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 28.9604780674
+>>> 
+>>> dis(a)
+  5           0 BUILD_MAP                0
+              3 STORE_FAST               0 (d)
+
+  6           6 SETUP_LOOP              40 (to 49)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               1 (100)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                26 (to 48)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                1 (i)
+             28 LOAD_CONST               2 (2)
+             31 BINARY_MULTIPLY
+             32 LOAD_FAST                0 (d)
+             35 LOAD_GLOBAL              1 (str)
+             38 LOAD_FAST                1 (i)
+             41 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             44 STORE_SUBSCR
+             45 JUMP_ABSOLUTE           19
+        &gt;&gt;   48 POP_BLOCK
+
+  8     &gt;&gt;   49 LOAD_FAST                0 (d)
+             52 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    return {str(i): i*2 for i in range(100)}
+
+>>> 
+>>> timeit(a, number=1000000)
+... 29.0226788521
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&lt;code object &lt;dictcomp&gt; at 0x7f3ed6050420, file &#34;/tmp/__pfw_test17_t3.py&#34;, line 5&gt;)
+              3 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;dictcomp&gt;&#39;)
+              6 MAKE_FUNCTION            0
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               3 (100)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+             19 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             22 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    d = {}
+    for i in range(100):
+        d.update({str(i): i*2})
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 73.8836421967
+>>> 
+>>> dis(a)
+  5           0 BUILD_MAP                0
+              3 STORE_FAST               0 (d)
+
+  6           6 SETUP_LOOP              50 (to 59)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               1 (100)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                36 (to 58)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_FAST                0 (d)
+             28 LOAD_ATTR                1 (update)
+             31 BUILD_MAP                1
+             34 LOAD_FAST                1 (i)
+             37 LOAD_CONST               2 (2)
+             40 BINARY_MULTIPLY
+             41 LOAD_GLOBAL              2 (str)
+             44 LOAD_FAST                1 (i)
+             47 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             50 STORE_MAP
+             51 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             54 POP_TOP
+             55 JUMP_ABSOLUTE           19
+        &gt;&gt;   58 POP_BLOCK
+
+  8     &gt;&gt;   59 LOAD_FAST                0 (d)
+             62 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test18"><h4>#Test 18</h4></a>
+    <div class="row-fluid" id="test18">
+        
+        <div class="span4"><pre class="python">
+def a():
+    l = range(50, -20, -2)
+    d = {}
+    for p, v in enumerate(l):
+        d[p] = v
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 4.75306510925
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (range)
+              3 LOAD_CONST               1 (50)
+              6 LOAD_CONST               4 (-20)
+              9 LOAD_CONST               5 (-2)
+             12 CALL_FUNCTION            3 (3 positional, 0 keyword pair)
+             15 STORE_FAST               0 (l)
+
+  6          18 BUILD_MAP                0
+             21 STORE_FAST               1 (d)
+
+  7          24 SETUP_LOOP              36 (to 63)
+             27 LOAD_GLOBAL              1 (enumerate)
+             30 LOAD_FAST                0 (l)
+             33 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             36 GET_ITER
+        &gt;&gt;   37 FOR_ITER                22 (to 62)
+             40 UNPACK_SEQUENCE          2
+             43 STORE_FAST               2 (p)
+             46 STORE_FAST               3 (v)
+
+  8          49 LOAD_FAST                3 (v)
+             52 LOAD_FAST                1 (d)
+             55 LOAD_FAST                2 (p)
+             58 STORE_SUBSCR
+             59 JUMP_ABSOLUTE           37
+        &gt;&gt;   62 POP_BLOCK
+
+  9     &gt;&gt;   63 LOAD_FAST                1 (d)
+             66 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    l = range(50, -20, -2)
+    return {p: v for p, v in enumerate(l)}
+
+>>> 
+>>> timeit(a, number=1000000)
+... 5.05992102623
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (range)
+              3 LOAD_CONST               1 (50)
+              6 LOAD_CONST               6 (-20)
+              9 LOAD_CONST               7 (-2)
+             12 CALL_FUNCTION            3 (3 positional, 0 keyword pair)
+             15 STORE_FAST               0 (l)
+
+  6          18 LOAD_CONST               4 (&lt;code object &lt;dictcomp&gt; at 0x7f7a2f8ec420, file &#34;/tmp/__pfw_test18_t3.py&#34;, line 6&gt;)
+             21 LOAD_CONST               5 (&#39;a.&lt;locals&gt;.&lt;dictcomp&gt;&#39;)
+             24 MAKE_FUNCTION            0
+             27 LOAD_GLOBAL              1 (enumerate)
+             30 LOAD_FAST                0 (l)
+             33 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             36 GET_ITER
+             37 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             40 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    l = range(50, -20, -2)
+    d = {}
+    for p, v in enumerate(l):
+        d.update({p: v})
+    return d
+
+>>> 
+>>> timeit(a, number=1000000)
+... 19.88803792
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (range)
+              3 LOAD_CONST               1 (50)
+              6 LOAD_CONST               4 (-20)
+              9 LOAD_CONST               5 (-2)
+             12 CALL_FUNCTION            3 (3 positional, 0 keyword pair)
+             15 STORE_FAST               0 (l)
+
+  6          18 BUILD_MAP                0
+             21 STORE_FAST               1 (d)
+
+  7          24 SETUP_LOOP              46 (to 73)
+             27 LOAD_GLOBAL              1 (enumerate)
+             30 LOAD_FAST                0 (l)
+             33 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             36 GET_ITER
+        &gt;&gt;   37 FOR_ITER                32 (to 72)
+             40 UNPACK_SEQUENCE          2
+             43 STORE_FAST               2 (p)
+             46 STORE_FAST               3 (v)
+
+  8          49 LOAD_FAST                1 (d)
+             52 LOAD_ATTR                2 (update)
+             55 BUILD_MAP                1
+             58 LOAD_FAST                3 (v)
+             61 LOAD_FAST                2 (p)
+             64 STORE_MAP
+             65 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             68 POP_TOP
+             69 JUMP_ABSOLUTE           37
+        &gt;&gt;   72 POP_BLOCK
+
+  9     &gt;&gt;   73 LOAD_FAST                1 (d)
+             76 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test19"><h4>#Test 19</h4></a>
+    <div class="row-fluid" id="test19">
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = 0
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.228487968445
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_GLOBAL              0 (bool)
+              9 LOAD_FAST                0 (a)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = []
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.230648994446
+>>> 
+>>> dis(a)
+  5           0 BUILD_LIST               0
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_GLOBAL              0 (bool)
+              9 LOAD_FAST                0 (a)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = 1
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.230710029602
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_GLOBAL              0 (bool)
+              9 LOAD_FAST                0 (a)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = True
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.253918886185
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (True)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_GLOBAL              0 (bool)
+              9 LOAD_FAST                0 (a)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = [1]
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.313113927841
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 BUILD_LIST               1
+              6 STORE_FAST               0 (a)
+
+  6           9 LOAD_GLOBAL              0 (bool)
+             12 LOAD_FAST                0 (a)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span2"><pre class="python">
+def a():
+    a = [1, 2, 3, 4]
+    return bool(a)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.322363138199
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 BUILD_LIST               4
+             15 STORE_FAST               0 (a)
+
+  6          18 LOAD_GLOBAL              0 (bool)
+             21 LOAD_FAST                0 (a)
+             24 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             27 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test20"><h4>#Test 20</h4></a>
+    <div class="row-fluid" id="test20">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    return a != 2
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.151919841766
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               3 (!=)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    return a != 2 and True or False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.183768987656
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               3 (!=)
+             15 POP_JUMP_IF_FALSE       24
+             18 LOAD_CONST               3 (True)
+             21 JUMP_IF_TRUE_OR_POP     27
+        &gt;&gt;   24 LOAD_CONST               4 (False)
+        &gt;&gt;   27 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = 1
+    return True if a != 2 else False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.189638137817
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               2 (2)
+             12 COMPARE_OP               3 (!=)
+             15 POP_JUMP_IF_FALSE       22
+             18 LOAD_CONST               3 (True)
+             21 RETURN_VALUE
+        &gt;&gt;   22 LOAD_CONST               4 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test21"><h4>#Test 21</h4></a>
+    <div class="row-fluid" id="test21">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = [1, 2, 3, 4, 5]
+    return sum([p+v for p, v in enumerate(a)])
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.14292812347
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 LOAD_CONST               4 (4)
+             12 LOAD_CONST               5 (5)
+             15 BUILD_LIST               5
+             18 STORE_FAST               0 (a)
+
+  6          21 LOAD_GLOBAL              0 (sum)
+             24 LOAD_CONST               6 (&lt;code object &lt;listcomp&gt; at 0x7fb092989420, file &#34;/tmp/__pfw_test21_t1.py&#34;, line 6&gt;)
+             27 LOAD_CONST               7 (&#39;a.&lt;locals&gt;.&lt;listcomp&gt;&#39;)
+             30 MAKE_FUNCTION            0
+             33 LOAD_GLOBAL              1 (enumerate)
+             36 LOAD_FAST                0 (a)
+             39 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             42 GET_ITER
+             43 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             46 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             49 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    return sum([p+v for p, v in enumerate([1, 2, 3, 4, 5])])
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.16426682472
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (sum)
+              3 LOAD_CONST               1 (&lt;code object &lt;listcomp&gt; at 0x7f894e7ba420, file &#34;/tmp/__pfw_test21_t2.py&#34;, line 5&gt;)
+              6 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;listcomp&gt;&#39;)
+              9 MAKE_FUNCTION            0
+             12 LOAD_GLOBAL              1 (enumerate)
+             15 LOAD_CONST               3 (1)
+             18 LOAD_CONST               4 (2)
+             21 LOAD_CONST               5 (3)
+             24 LOAD_CONST               6 (4)
+             27 LOAD_CONST               7 (5)
+             30 BUILD_LIST               5
+             33 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             36 GET_ITER
+             37 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             40 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             43 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    return sum([p+v for p, v in enumerate(xrange(1, 6))])
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.24158906937
+>>> 
+>>> dis(a)
+  5           0 LOAD_GLOBAL              0 (sum)
+              3 LOAD_CONST               1 (&lt;code object &lt;listcomp&gt; at 0x7f681efe5420, file &#34;/tmp/__pfw_test21_t3.py&#34;, line 5&gt;)
+              6 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;listcomp&gt;&#39;)
+              9 MAKE_FUNCTION            0
+             12 LOAD_GLOBAL              1 (enumerate)
+             15 LOAD_GLOBAL              2 (xrange)
+             18 LOAD_CONST               3 (1)
+             21 LOAD_CONST               4 (6)
+             24 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             27 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             30 GET_ITER
+             31 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             34 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             37 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test22"><h4>#Test 22</h4></a>
+    <div class="row-fluid" id="test22">
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = 1
+    if a == 1 or a == 2 or a == 3:
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.161720991135
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               1 (1)
+             12 COMPARE_OP               2 (==)
+             15 POP_JUMP_IF_TRUE        42
+             18 LOAD_FAST                0 (a)
+             21 LOAD_CONST               2 (2)
+             24 COMPARE_OP               2 (==)
+             27 POP_JUMP_IF_TRUE        42
+             30 LOAD_FAST                0 (a)
+             33 LOAD_CONST               3 (3)
+             36 COMPARE_OP               2 (==)
+             39 POP_JUMP_IF_FALSE       46
+
+  7     &gt;&gt;   42 LOAD_CONST               4 (True)
+             45 RETURN_VALUE
+
+  8     &gt;&gt;   46 LOAD_CONST               5 (False)
+             49 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    a = 1
+    if a in (1, 2, 3):
+        return True
+    return False
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.189331054688
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (a)
+
+  6           6 LOAD_FAST                0 (a)
+              9 LOAD_CONST               6 ((1, 2, 3))
+             12 COMPARE_OP               6 (in)
+             15 POP_JUMP_IF_FALSE       22
+
+  7          18 LOAD_CONST               4 (True)
+             21 RETURN_VALUE
+
+  8     &gt;&gt;   22 LOAD_CONST               5 (False)
+             25 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test23"><h4>#Test 23</h4></a>
+    <div class="row-fluid" id="test23">
+        
+        <div class="span4"><pre class="python">
+def a():
+    return ''.join(map(str, xrange(10)))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.98753595352
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&#39;&#39;)
+              3 LOAD_ATTR                0 (join)
+              6 LOAD_GLOBAL              1 (map)
+              9 LOAD_GLOBAL              2 (str)
+             12 LOAD_GLOBAL              3 (xrange)
+             15 LOAD_CONST               2 (10)
+             18 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             21 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             24 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             27 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    return ''.join(map(str, range(10)))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 2.05258488655
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&#39;&#39;)
+              3 LOAD_ATTR                0 (join)
+              6 LOAD_GLOBAL              1 (map)
+              9 LOAD_GLOBAL              2 (str)
+             12 LOAD_GLOBAL              3 (range)
+             15 LOAD_CONST               2 (10)
+             18 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             21 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             24 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             27 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    r = ''
+    for i in range(10):
+        r = '%s%s' % (r, str(i))
+    return r
+
+>>> 
+>>> timeit(a, number=1000000)
+... 3.97667503357
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&#39;&#39;)
+              3 STORE_FAST               0 (r)
+
+  6           6 SETUP_LOOP              42 (to 51)
+              9 LOAD_GLOBAL              0 (range)
+             12 LOAD_CONST               2 (10)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 GET_ITER
+        &gt;&gt;   19 FOR_ITER                28 (to 50)
+             22 STORE_FAST               1 (i)
+
+  7          25 LOAD_CONST               3 (&#39;%s%s&#39;)
+             28 LOAD_FAST                0 (r)
+             31 LOAD_GLOBAL              1 (str)
+             34 LOAD_FAST                1 (i)
+             37 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             40 BUILD_TUPLE              2
+             43 BINARY_MODULO
+             44 STORE_FAST               0 (r)
+             47 JUMP_ABSOLUTE           19
+        &gt;&gt;   50 POP_BLOCK
+
+  8     &gt;&gt;   51 LOAD_FAST                0 (r)
+             54 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test24"><h4>#Test 24</h4></a>
+    <div class="row-fluid" id="test24">
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = [[1, 2, 3], [2, 3, 4], [4, 5, 6]]
+    b = {k: v for x, k, v in a}
+    return b
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.02242708206
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 BUILD_LIST               3
+             12 LOAD_CONST               2 (2)
+             15 LOAD_CONST               3 (3)
+             18 LOAD_CONST               4 (4)
+             21 BUILD_LIST               3
+             24 LOAD_CONST               4 (4)
+             27 LOAD_CONST               5 (5)
+             30 LOAD_CONST               6 (6)
+             33 BUILD_LIST               3
+             36 BUILD_LIST               3
+             39 STORE_FAST               0 (a)
+
+  6          42 LOAD_CONST               7 (&lt;code object &lt;dictcomp&gt; at 0x7fb89e06e420, file &#34;/tmp/__pfw_test24_t3.py&#34;, line 6&gt;)
+             45 LOAD_CONST               8 (&#39;a.&lt;locals&gt;.&lt;dictcomp&gt;&#39;)
+             48 MAKE_FUNCTION            0
+             51 LOAD_FAST                0 (a)
+             54 GET_ITER
+             55 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             58 STORE_FAST               1 (b)
+
+  7          61 LOAD_FAST                1 (b)
+             64 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = [[1, 2, 3], [2, 3, 4], [4, 5, 6]]
+    b = {x[1]: x[2] for x in a}
+    return b
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.05519008636
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 BUILD_LIST               3
+             12 LOAD_CONST               2 (2)
+             15 LOAD_CONST               3 (3)
+             18 LOAD_CONST               4 (4)
+             21 BUILD_LIST               3
+             24 LOAD_CONST               4 (4)
+             27 LOAD_CONST               5 (5)
+             30 LOAD_CONST               6 (6)
+             33 BUILD_LIST               3
+             36 BUILD_LIST               3
+             39 STORE_FAST               0 (a)
+
+  6          42 LOAD_CONST               7 (&lt;code object &lt;dictcomp&gt; at 0x7f7d6bdd6420, file &#34;/tmp/__pfw_test24_t1.py&#34;, line 6&gt;)
+             45 LOAD_CONST               8 (&#39;a.&lt;locals&gt;.&lt;dictcomp&gt;&#39;)
+             48 MAKE_FUNCTION            0
+             51 LOAD_FAST                0 (a)
+             54 GET_ITER
+             55 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             58 STORE_FAST               1 (b)
+
+  7          61 LOAD_FAST                1 (b)
+             64 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    a = [[1, 2, 3], [2, 3, 4], [4, 5, 6]]
+    b = dict((x, y)for w, x, y in a)
+    return b
+
+>>> 
+>>> timeit(a, number=1000000)
+... 1.86678385735
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 LOAD_CONST               2 (2)
+              6 LOAD_CONST               3 (3)
+              9 BUILD_LIST               3
+             12 LOAD_CONST               2 (2)
+             15 LOAD_CONST               3 (3)
+             18 LOAD_CONST               4 (4)
+             21 BUILD_LIST               3
+             24 LOAD_CONST               4 (4)
+             27 LOAD_CONST               5 (5)
+             30 LOAD_CONST               6 (6)
+             33 BUILD_LIST               3
+             36 BUILD_LIST               3
+             39 STORE_FAST               0 (a)
+
+  6          42 LOAD_GLOBAL              0 (dict)
+             45 LOAD_CONST               7 (&lt;code object &lt;genexpr&gt; at 0x7f41b7a27420, file &#34;/tmp/__pfw_test24_t2.py&#34;, line 6&gt;)
+             48 LOAD_CONST               8 (&#39;a.&lt;locals&gt;.&lt;genexpr&gt;&#39;)
+             51 MAKE_FUNCTION            0
+             54 LOAD_FAST                0 (a)
+             57 GET_ITER
+             58 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             61 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             64 STORE_FAST               1 (b)
+
+  7          67 LOAD_FAST                1 (b)
+             70 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test25"><h4>#Test 25</h4></a>
+    <div class="row-fluid" id="test25">
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 0
+    return not n
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.108924865723
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_FAST                0 (n)
+              9 UNARY_NOT
+             10 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 1
+    return not n
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.122176885605
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_FAST                0 (n)
+              9 UNARY_NOT
+             10 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 0
+    if n:
+        return False
+    else:
+        return True
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.159090042114
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_FAST                0 (n)
+              9 POP_JUMP_IF_FALSE       16
+
+  7          12 LOAD_CONST               2 (False)
+             15 RETURN_VALUE
+
+  9     &gt;&gt;   16 LOAD_CONST               3 (True)
+             19 RETURN_VALUE
+             20 LOAD_CONST               0 (None)
+             23 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 1
+    if n:
+        return False
+    else:
+        return True
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.162801980972
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (1)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_FAST                0 (n)
+              9 POP_JUMP_IF_FALSE       16
+
+  7          12 LOAD_CONST               2 (False)
+             15 RETURN_VALUE
+
+  9     &gt;&gt;   16 LOAD_CONST               3 (True)
+             19 RETURN_VALUE
+             20 LOAD_CONST               0 (None)
+             23 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test26"><h4>#Test 26</h4></a>
+    <div class="row-fluid" id="test26">
+        
+        <div class="span6"><pre class="python">
+def k(x=1, y=1, z=-1):
+    return x * (y - 2 * z)
+
+
+def a():
+    return k(x=5, y=3)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.386114835739
+>>> 
+>>> dis(a)
+  9           0 LOAD_GLOBAL              0 (k)
+              3 LOAD_CONST               1 (&#39;x&#39;)
+              6 LOAD_CONST               2 (5)
+              9 LOAD_CONST               3 (&#39;y&#39;)
+             12 LOAD_CONST               4 (3)
+             15 CALL_FUNCTION          512 (0 positional, 2 keyword pair)
+             18 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def k(x=1, y=1, z=-1):
+    return x * (y - 2 * z)
+
+
+def a():
+    return k(**{'x': 5, 'y': 3})
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.598258018494
+>>> 
+>>> dis(a)
+  9           0 LOAD_GLOBAL              0 (k)
+              3 BUILD_MAP                2
+              6 LOAD_CONST               1 (5)
+              9 LOAD_CONST               2 (&#39;x&#39;)
+             12 STORE_MAP
+             13 LOAD_CONST               3 (3)
+             16 LOAD_CONST               4 (&#39;y&#39;)
+             19 STORE_MAP
+             20 CALL_FUNCTION_KW         0 (0 positional, 0 keyword pair)
+             23 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test27"><h4>#Test 27</h4></a>
+    <div class="row-fluid" id="test27">
+        
+        <div class="span6"><pre class="python">
+def a(n=25):
+    a, b = 0, 1
+    for i in range(n):
+        a, b = b, a + b
+    return a
+
+>>> 
+>>> timeit(a, number=1000000)
+... 2.51424002647
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               3 ((0, 1))
+              3 UNPACK_SEQUENCE          2
+              6 STORE_FAST               1 (a)
+              9 STORE_FAST               2 (b)
+
+  6          12 SETUP_LOOP              37 (to 52)
+             15 LOAD_GLOBAL              0 (range)
+             18 LOAD_FAST                0 (n)
+             21 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             24 GET_ITER
+        &gt;&gt;   25 FOR_ITER                23 (to 51)
+             28 STORE_FAST               3 (i)
+
+  7          31 LOAD_FAST                2 (b)
+             34 LOAD_FAST                1 (a)
+             37 LOAD_FAST                2 (b)
+             40 BINARY_ADD
+             41 ROT_TWO
+             42 STORE_FAST               1 (a)
+             45 STORE_FAST               2 (b)
+             48 JUMP_ABSOLUTE           25
+        &gt;&gt;   51 POP_BLOCK
+
+  8     &gt;&gt;   52 LOAD_FAST                1 (a)
+             55 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a(n=25):
+    a, b = 0, 1
+    for i in range(n):
+        x = a + b
+        a = b
+        b = x
+    return a
+
+>>> 
+>>> timeit(a, number=1000000)
+... 3.02163410187
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               3 ((0, 1))
+              3 UNPACK_SEQUENCE          2
+              6 STORE_FAST               1 (a)
+              9 STORE_FAST               2 (b)
+
+  6          12 SETUP_LOOP              42 (to 57)
+             15 LOAD_GLOBAL              0 (range)
+             18 LOAD_FAST                0 (n)
+             21 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             24 GET_ITER
+        &gt;&gt;   25 FOR_ITER                28 (to 56)
+             28 STORE_FAST               3 (i)
+
+  7          31 LOAD_FAST                1 (a)
+             34 LOAD_FAST                2 (b)
+             37 BINARY_ADD
+             38 STORE_FAST               4 (x)
+
+  8          41 LOAD_FAST                2 (b)
+             44 STORE_FAST               1 (a)
+
+  9          47 LOAD_FAST                4 (x)
+             50 STORE_FAST               2 (b)
+             53 JUMP_ABSOLUTE           25
+        &gt;&gt;   56 POP_BLOCK
+
+ 10     &gt;&gt;   57 LOAD_FAST                1 (a)
+             60 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test28"><h4>#Test 28</h4></a>
+    <div class="row-fluid" id="test28">
+        
+        <div class="span4"><pre class="python">
+def a():
+    x = y = z = w = k = 0
+    return x, y, z, w, k
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.247763156891
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 DUP_TOP
+              4 STORE_FAST               0 (x)
+              7 DUP_TOP
+              8 STORE_FAST               1 (y)
+             11 DUP_TOP
+             12 STORE_FAST               2 (z)
+             15 DUP_TOP
+             16 STORE_FAST               3 (w)
+             19 STORE_FAST               4 (k)
+
+  6          22 LOAD_FAST                0 (x)
+             25 LOAD_FAST                1 (y)
+             28 LOAD_FAST                2 (z)
+             31 LOAD_FAST                3 (w)
+             34 LOAD_FAST                4 (k)
+             37 BUILD_TUPLE              5
+             40 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    x = 0
+    y = 0
+    z = 0
+    w = 0
+    k = 0
+    return x, y, z, w, k
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.249707937241
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (0)
+              3 STORE_FAST               0 (x)
+
+  6           6 LOAD_CONST               1 (0)
+              9 STORE_FAST               1 (y)
+
+  7          12 LOAD_CONST               1 (0)
+             15 STORE_FAST               2 (z)
+
+  8          18 LOAD_CONST               1 (0)
+             21 STORE_FAST               3 (w)
+
+  9          24 LOAD_CONST               1 (0)
+             27 STORE_FAST               4 (k)
+
+ 10          30 LOAD_FAST                0 (x)
+             33 LOAD_FAST                1 (y)
+             36 LOAD_FAST                2 (z)
+             39 LOAD_FAST                3 (w)
+             42 LOAD_FAST                4 (k)
+             45 BUILD_TUPLE              5
+             48 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    x, y, z, w, k = 0, 0, 0, 0, 0
+    return x, y, z, w, k
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.253453016281
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               2 ((0, 0, 0, 0, 0))
+              3 UNPACK_SEQUENCE          5
+              6 STORE_FAST               0 (x)
+              9 STORE_FAST               1 (y)
+             12 STORE_FAST               2 (z)
+             15 STORE_FAST               3 (w)
+             18 STORE_FAST               4 (k)
+
+  6          21 LOAD_FAST                0 (x)
+             24 LOAD_FAST                1 (y)
+             27 LOAD_FAST                2 (z)
+             30 LOAD_FAST                3 (w)
+             33 LOAD_FAST                4 (k)
+             36 BUILD_TUPLE              5
+             39 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test29"><h4>#Test 29</h4></a>
+    <div class="row-fluid" id="test29">
+        
+        <div class="span3"><pre class="python">
+import math
+
+
+def a():
+    n = 123.123
+    return math.floor(n)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.195842981339
+>>> 
+>>> dis(a)
+  8           0 LOAD_CONST               1 (123.123)
+              3 STORE_FAST               0 (n)
+
+  9           6 LOAD_GLOBAL              0 (math)
+              9 LOAD_ATTR                1 (floor)
+             12 LOAD_FAST                0 (n)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 123.123
+    return int(n)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.248912096024
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (123.123)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_GLOBAL              0 (int)
+              9 LOAD_FAST                0 (n)
+             12 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             15 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+import math
+
+
+def a():
+    n = 123.123
+    return math.trunc(n)
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.299951076508
+>>> 
+>>> dis(a)
+  8           0 LOAD_CONST               1 (123.123)
+              3 STORE_FAST               0 (n)
+
+  9           6 LOAD_GLOBAL              0 (math)
+              9 LOAD_ATTR                1 (trunc)
+             12 LOAD_FAST                0 (n)
+             15 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             18 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span3"><pre class="python">
+def a():
+    n = 123.123
+    return n // 1
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.311570882797
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (123.123)
+              3 STORE_FAST               0 (n)
+
+  6           6 LOAD_FAST                0 (n)
+              9 LOAD_CONST               2 (1)
+             12 BINARY_FLOOR_DIVIDE
+             13 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test30"><h4>#Test 30</h4></a>
+    <div class="row-fluid" id="test30">
+        
+        <div class="span4"><pre class="python">
+def a():
+    f = lambda *args: args
+    return f('a', 'b')
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.308448076248
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&lt;code object &lt;lambda&gt; at 0x7f3f3f139420, file &#34;/tmp/__pfw_test30_t1.py&#34;, line 5&gt;)
+              3 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;lambda&gt;&#39;)
+              6 MAKE_FUNCTION            0
+              9 STORE_FAST               0 (f)
+
+  6          12 LOAD_FAST                0 (f)
+             15 LOAD_CONST               3 (&#39;a&#39;)
+             18 LOAD_CONST               4 (&#39;b&#39;)
+             21 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             24 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    f = lambda *args: args
+    return f(*('a', 'b'))
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.324676990509
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&lt;code object &lt;lambda&gt; at 0x7f959b45e420, file &#34;/tmp/__pfw_test30_t2.py&#34;, line 5&gt;)
+              3 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;lambda&gt;&#39;)
+              6 MAKE_FUNCTION            0
+              9 STORE_FAST               0 (f)
+
+  6          12 LOAD_FAST                0 (f)
+             15 LOAD_CONST               5 ((&#39;a&#39;, &#39;b&#39;))
+             18 CALL_FUNCTION_VAR        0 (0 positional, 0 keyword pair)
+             21 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span4"><pre class="python">
+def a():
+    f = lambda *args: args
+    return f(*'ab')
+
+>>> 
+>>> timeit(a, number=1000000)
+... 0.584281921387
+>>> 
+>>> dis(a)
+  5           0 LOAD_CONST               1 (&lt;code object &lt;lambda&gt; at 0x7f1a58b10420, file &#34;/tmp/__pfw_test30_t3.py&#34;, line 5&gt;)
+              3 LOAD_CONST               2 (&#39;a.&lt;locals&gt;.&lt;lambda&gt;&#39;)
+              6 MAKE_FUNCTION            0
+              9 STORE_FAST               0 (f)
+
+  6          12 LOAD_FAST                0 (f)
+             15 LOAD_CONST               3 (&#39;ab&#39;)
+             18 CALL_FUNCTION_VAR        0 (0 positional, 0 keyword pair)
+             21 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test31"><h4>#Test 31</h4></a>
+    <div class="row-fluid" id="test31">
+        
+        <div class="span6"><pre class="python">
+def a(int=int, str=str, range=range):
+    for i in range(500):
+        int(str(i))
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 31.9951808453
+>>> 
+>>> dis(a)
+  5           0 SETUP_LOOP              36 (to 39)
+              3 LOAD_FAST                2 (range)
+              6 LOAD_CONST               1 (500)
+              9 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             12 GET_ITER
+        &gt;&gt;   13 FOR_ITER                22 (to 38)
+             16 STORE_FAST               3 (i)
+
+  6          19 LOAD_FAST                0 (int)
+             22 LOAD_FAST                1 (str)
+             25 LOAD_FAST                3 (i)
+             28 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             31 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             34 POP_TOP
+             35 JUMP_ABSOLUTE           13
+        &gt;&gt;   38 POP_BLOCK
+        &gt;&gt;   39 LOAD_CONST               0 (None)
+             42 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    for i in range(500):
+        int(str(i))
+
+
+number = 100000
+
+>>> 
+>>> timeit(a, number=100000)
+... 34.025177002
+>>> 
+>>> dis(a)
+  5           0 SETUP_LOOP              36 (to 39)
+              3 LOAD_GLOBAL              0 (range)
+              6 LOAD_CONST               1 (500)
+              9 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             12 GET_ITER
+        &gt;&gt;   13 FOR_ITER                22 (to 38)
+             16 STORE_FAST               0 (i)
+
+  6          19 LOAD_GLOBAL              1 (int)
+             22 LOAD_GLOBAL              2 (str)
+             25 LOAD_FAST                0 (i)
+             28 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             31 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             34 POP_TOP
+             35 JUMP_ABSOLUTE           13
+        &gt;&gt;   38 POP_BLOCK
+        &gt;&gt;   39 LOAD_CONST               0 (None)
+             42 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+    <a href="#test32"><h4>#Test 32</h4></a>
+    <div class="row-fluid" id="test32">
+        
+        <div class="span6"><pre class="python">
+def a():
+    D = {}
+    for k in xrange(0, 200):
+        D[k] if k in D else None
+    return D
+
+>>> 
+>>> timeit(a, number=1000000)
+... 13.5737528801
+>>> 
+>>> dis(a)
+  5           0 BUILD_MAP                0
+              3 STORE_FAST               0 (D)
+
+  6           6 SETUP_LOOP              49 (to 58)
+              9 LOAD_GLOBAL              0 (xrange)
+             12 LOAD_CONST               1 (0)
+             15 LOAD_CONST               2 (200)
+             18 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             21 GET_ITER
+        &gt;&gt;   22 FOR_ITER                32 (to 57)
+             25 STORE_FAST               1 (k)
+
+  7          28 LOAD_FAST                1 (k)
+             31 LOAD_FAST                0 (D)
+             34 COMPARE_OP               6 (in)
+             37 POP_JUMP_IF_FALSE       50
+             40 LOAD_FAST                0 (D)
+             43 LOAD_FAST                1 (k)
+             46 BINARY_SUBSCR
+             47 JUMP_FORWARD             3 (to 53)
+        &gt;&gt;   50 LOAD_CONST               0 (None)
+        &gt;&gt;   53 POP_TOP
+             54 JUMP_ABSOLUTE           22
+        &gt;&gt;   57 POP_BLOCK
+
+  8     &gt;&gt;   58 LOAD_FAST                0 (D)
+             61 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+        <div class="span6"><pre class="python">
+def a():
+    D = {}
+    for k in xrange(0, 200):
+        D.get(k)
+    return D
+
+>>> 
+>>> timeit(a, number=1000000)
+... 38.3689742088
+>>> 
+>>> dis(a)
+  5           0 BUILD_MAP                0
+              3 STORE_FAST               0 (D)
+
+  6           6 SETUP_LOOP              36 (to 45)
+              9 LOAD_GLOBAL              0 (xrange)
+             12 LOAD_CONST               1 (0)
+             15 LOAD_CONST               2 (200)
+             18 CALL_FUNCTION            2 (2 positional, 0 keyword pair)
+             21 GET_ITER
+        &gt;&gt;   22 FOR_ITER                19 (to 44)
+             25 STORE_FAST               1 (k)
+
+  7          28 LOAD_FAST                0 (D)
+             31 LOAD_ATTR                1 (get)
+             34 LOAD_FAST                1 (k)
+             37 CALL_FUNCTION            1 (1 positional, 0 keyword pair)
+             40 POP_TOP
+             41 JUMP_ABSOLUTE           22
+        &gt;&gt;   44 POP_BLOCK
+
+  8     &gt;&gt;   45 LOAD_FAST                0 (D)
+             48 RETURN_VALUE
+
+>>> 
+        </pre></div>
+        
+    </div>
+    
+</div>
+<script src="js/highlight.pack.js"></script>
+<script>
+    window.onload = function() {
+        var aCodes = document.getElementsByTagName('pre');
+        for (var i = 0; i < aCodes.length; i++) {
+            hljs.highlightBlock(aCodes[i]);
+        }
+    };
+</script>
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-17236714-3']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
+</script>
+</body>
+</html>
