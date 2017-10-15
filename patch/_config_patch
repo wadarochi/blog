@@ -1,8 +1,8 @@
 diff --git a/_config.yml b/_config.yml
-index ad3d4a7..18ef8da 100755
+index 2f63b18..be58458 100755
 --- a/_config.yml
 +++ b/_config.yml
-@@ -59,9 +59,9 @@ index_with_subtitle: false
+@@ -85,9 +85,9 @@ index_with_subtitle: false
  # Value after `||` delimeter is the name of FontAwesome icon. If icon (with or without delimeter) is not specified, question icon will be loaded.
  menu:
    home: / || home
@@ -15,7 +15,7 @@ index ad3d4a7..18ef8da 100755
    archives: /archives/ || archive
    #schedule: /schedule/ || calendar
    #sitemap: /sitemap.xml || sitemap
-@@ -319,7 +319,7 @@ han: false
+@@ -345,7 +345,7 @@ han: false
  #swiftype_key:
  
  # Baidu Analytics ID
@@ -24,16 +24,16 @@ index ad3d4a7..18ef8da 100755
  
  # Duoshuo ShortName
  #duoshuo_shortname:
-@@ -357,7 +357,7 @@ valine:
+@@ -383,7 +383,7 @@ valine:
  
  # Support for LiveRe comments system.
  # You can get your uid from https://livere.com/insight/myCode (General web site)
 -#livere_uid: your uid
 +livere_uid: MTAyMC8zMDYzMi83MTg3
  
- # Baidu Share
- # Available value:
-@@ -500,7 +500,7 @@ calendar:
+ # Gitment
+ # Introduction: https://imsun.net/posts/gitment-introduction/
+@@ -570,7 +570,7 @@ calendar:
  
  # Algolia Search
  algolia_search:
