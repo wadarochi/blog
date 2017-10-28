@@ -81,9 +81,3 @@ deploy:
   type: git
   repo: https://github.com/wadarochi/wadarochi.github.io.git
   branch: master
-
-algolia:
-  applicationID: '6N1TPC8YMN'
-  apiKey: '1e3858199501f41faf0027df7225436d'
-  indexName: 'prod_wadarochi'
-  chunkSize: 5000
