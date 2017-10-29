@@ -32,6 +32,8 @@ $ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 
 $ sudo sh -c "echo 'deb https://apt.dockerproject.org/repo debian-$(lsb_release -sc) main' | cat > /etc/apt/sources.list.d/docker.list"
 ```
 
+<!--more-->
+
 如果你之前不小心装了`lxc-docker-1.6.0`，把它卸载掉：
 ```bash
 $ sudo apt remove lxc-docker-1.6.0

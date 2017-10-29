@@ -17,6 +17,8 @@ date: 2012-10-15 23:20:00
 
 简而言之，devtools通过提供名为modtool.py的工具，为各位开发者提供了一个快速生成模块骨架的手段。关于这个工具的简要介绍，可以参考[这里](https://www.cgran.org/wiki/devtools)，余下部分将简要介绍如何生成一个source模块的。
 
+<!--more-->
+
 ## 安装
 
 1.  想要获得最新版本的话，请从其[项目主页](https://github.com/mbant/gr-modtool)(github)上下载最新版本的[gr_modtool.py](https://github.com/mbant/gr-modtool/blob/master/gr_modtool.py "gr_modtool.py")文件即可。注意，只需要这一个python文件即可；
