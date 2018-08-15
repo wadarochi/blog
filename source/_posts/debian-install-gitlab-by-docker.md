@@ -26,7 +26,7 @@ lxc-docker-1.6.0/未知,now 1.6.0 amd64
 显然太老了，那么就从docker官方源安装最新版吧，Debian指令如下：
 ```bash
 # 添加docker官方源repo key（对Debian和Ubuntu都一样）
-$ sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+$ sudo apt-key adv --keyserver http://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 
 # 添加docker官方源，For Debian (7.0 and higher)
 $ sudo sh -c "echo 'deb https://apt.dockerproject.org/repo debian-$(lsb_release -sc) main' | cat > /etc/apt/sources.list.d/docker.list"
