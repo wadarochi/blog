@@ -1,0 +1,66 @@
+# next theme customization
+
+# seo
+seo: true
+
+# since
+footer:
+    since: 2010
+
+# code highlight
+highlight_theme: night eighties
+
+# theme
+scheme: Gemini
+
+# avatar
+avatar:
+  # in theme directory(source/images): /images/avatar.gif
+  # in site  directory(source/uploads): /uploads/avatar.gif
+  # You can also use other linking images.
+  url: /img/avatar.png
+
+# social account
+social:
+  GitHub: https://github.com/wadarochi || github
+  E-Mail: mailto:wadarochi@gmail.com || envelope
+  Google: https://plus.google.com/115181423519169380118 || google
+
+# license
+creative_commons: by-nc-sa
+
+# Baidu统计
+baidu_analytics: ffef4fbaef7cdb68f17096cb5f507f85
+
+# menu
+menu:
+  home: / || home
+  about: /about/ || user
+  tags: /tags/ || tags
+  categories: /categories/ || th
+  archives: /archives/ || archive
+
+# comment
+livere_uid: MTAyMC8zMDYzMi83MTg3
+
+# codeblock style
+codeblock:
+  # Add copy button on codeblock
+  copy_button:
+    enable: true
+    # Show text copy result
+    show_result: true
+
+# license in post
+post_copyright:
+  enable: true
+
+# Google, Baidu local search
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
+
+local_search:
+  enable: true
