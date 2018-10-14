@@ -133,7 +133,7 @@ gem install xcpretty
 
 使用方法：
 1. 首先clean你的XCode工程；
-2. `xcodebuild -project PROJECT_NAME.xcodeproj | xcpretty -r json-compilation-database --output compile_commands.json`．
+2. `xcodebuild -project PROJECT_NAME.xcodeproj | xcpretty -r json-compilation-database --output compile_commands.json`；
 3. 把生成的`compile_commands.json`扔到工程源码的根目录．
 
 ## swift
