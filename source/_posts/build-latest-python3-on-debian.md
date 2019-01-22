@@ -32,6 +32,8 @@ tags:
 
 因为这个插件很好用，所以只能升级开发机上的Python了。上文也说了，repo中只有3.4，搜索了各种backport，都没有为Jessie提供3.5以上的Python3，遂动手从源码编译。
 
+<!--more-->
+
 # 编译Python 3.7.2
 ## 准备工作——编译gcc 8.2
 Debian Jessise repo中的gcc 4.9.2无法胜任编译Python 3.7.2的重任，所以需要先从源码中build一份gcc，反正都已经从源码build了，干脆来个最新的，本文写作时，GNU FTP上最新的gcc为8.2.0，就是它了。
