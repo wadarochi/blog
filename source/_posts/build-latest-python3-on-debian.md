@@ -58,6 +58,7 @@ cd gcc-8.2.0
 ./contrib/download_prerequisite
 
 # configure
+cd ../gcc-build
 ../gcc-8.2.0/configure --prefix=/home/xxx/.local --enable-shared --disable-multilib --enable-threads=posix --enable-__cxa_atexit --enable-clocale=gnu --enable-languages=c,c++,fortran,go,objc,obj-c++
 
 # build
@@ -91,6 +92,7 @@ wget https://www.python.org/ftp/python/3.7.2/Python-3.7.2.tar.xz
 tar -xf Python-3.7.2.tar.xz
 
 # configure
+cd python-build
 ../Python-3.7.2/configure --enable-optimizations --prefix=/home/xxx/.local
 
 # build
